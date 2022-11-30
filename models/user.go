@@ -2,7 +2,7 @@ package models
 
 type User struct {
 	Id          int64  `gorm:"primaryKey;autoIncrement" json:"id"`
-	NamaLengkap string `gorm:"varchar(300)" json:"nama_lengkap"`
-	Username    string `gorm:"varchar(300)" json:"username"`
-	Password    string `gorm:"varchar(300)" json:"password"`
+	Email string `gorm:"varchar(255)" json:"email"`
+	Password    string `gorm:"text" json:"password"`
+	Role    string `gorm:"varchar(100)" json:"role"`
 }

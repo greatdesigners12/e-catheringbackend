@@ -29,10 +29,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	// ambil data user berdasarkan username
 	var user models.User
-	if err := models.DB.Where("username = ?", userInput.Username).First(&user).Error; err != nil {
+	if err := models.DB.Where("email = ?", userInput.Email).First(&user).Error; err != nil {
 		switch err {
 		case gorm.ErrRecordNotFound:
-			response := map[string]string{"message": "Username atau password salah"}
+			response := map[string]string{"message": "Email atau password salah"}
 			helper.ResponseJSON(w, http.StatusUnauthorized, response)
 			return
 		default:
@@ -52,7 +52,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	// proses pembuatan token jwt
 	expTime := time.Now().Add(time.Minute * 1)
 	claims := &config.JWTClaim{
-		Username: user.Username,
+		Email: user.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    "go-jwt-mux",
 			ExpiresAt: jwt.NewNumericDate(expTime),
