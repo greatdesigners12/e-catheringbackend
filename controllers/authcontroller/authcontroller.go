@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jeypc/go-jwt-mux/config"
+	"github.com/rest-api/golang/config"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/jeypc/go-jwt-mux/helper"
+	"github.com/rest-api/golang/helper"
 	"gorm.io/gorm"
 
-	"github.com/jeypc/go-jwt-mux/models"
+	"github.com/rest-api/golang/models"
 	"golang.org/x/crypto/bcrypt"
 )
 

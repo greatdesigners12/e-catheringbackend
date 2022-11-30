@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/jeypc/go-jwt-mux/config"
-	"github.com/jeypc/go-jwt-mux/helper"
+	"github.com/rest-api/golang/config"
+	"github.com/rest-api/golang/helper"
 )
 
 func JWTMiddleware(next http.Handler) http.Handler {

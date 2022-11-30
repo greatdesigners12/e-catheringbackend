@@ -1,4 +1,4 @@
-module github.com/jeypc/go-jwt-mux
+module github.com/rest-api/golang
 
 go 1.18
 
