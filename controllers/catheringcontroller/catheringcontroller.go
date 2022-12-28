@@ -1,4 +1,4 @@
-package productcontroller
+package catheringcontroller
 
 import (
 	"encoding/json"
@@ -18,10 +18,10 @@ import (
 func Index(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	
-	var Product []models.Product
-	models.DB.Find(&Product)
-	response, _  := json.Marshal(map[string]any{"status": "success","data":Product, "statusCode":200})
-	if err := models.DB.Find(&Product).Error; err != nil {
+	var Cathering []models.Cathering
+	models.DB.Find(&Cathering)
+	response, _  := json.Marshal(map[string]any{"status": "success","data":Cathering, "statusCode":200})
+	if err := models.DB.Find(&Cathering).Error; err != nil {
 		w.WriteHeader(http.StatusExpectationFailed)
 		w.Write([]byte(err.Error()))
 		return
@@ -35,8 +35,8 @@ func Index(w http.ResponseWriter, r *http.Request){
 func Show(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	id := mux.Vars(r)["id"]
-	var Product []models.Product
-	result := models.DB.First(&Product, id)
+	var Cathering []models.Cathering
+	result := models.DB.First(&Cathering, id)
 	fmt.Println(result.RowsAffected)
 	fmt.Println(result.RowsAffected == 0)
 	if result.Error != nil {
@@ -45,10 +45,10 @@ func Show(w http.ResponseWriter, r *http.Request){
 		w.Write(response)
 	}else if result.RowsAffected == 0{
 		w.WriteHeader(http.StatusInternalServerError)
-		status,_ := json.Marshal(map[string]any{"status": "failed", "message": "No Products Found"})
+		status,_ := json.Marshal(map[string]any{"status": "failed", "message": "No Catherings Found"})
 		w.Write(status)
 	}else{
-		response, _  := json.Marshal(map[string]any{"status": "success","data":Product, "statusCode":200})
+		response, _  := json.Marshal(map[string]any{"status": "success","data":Cathering, "statusCode":200})
 		w.WriteHeader(http.StatusOK)
 		w.Write(response)
 	}
@@ -59,18 +59,17 @@ func Show(w http.ResponseWriter, r *http.Request){
 
 func Create(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
-
 	decoder := json.NewDecoder(r.Body)
-    var Product models.Product
-    decoder.Decode(&Product)
-	result := models.DB.Create(&Product)
+    var Cathering models.Cathering
+    decoder.Decode(&Cathering)
+	result := models.DB.Create(&Cathering)
 	if result.Error != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		status,_ := json.Marshal(result.Error)
 		w.Write(status)
 	}else{
 		w.WriteHeader(http.StatusOK)
-		status,_ := json.Marshal(map[string]any{"status": "success","data":Product, "statusCode":200})
+		status,_ := json.Marshal(map[string]any{"status": "success","data":Cathering, "statusCode":200})
 		w.Write(status)
 	}
 	
@@ -79,18 +78,18 @@ func Create(w http.ResponseWriter, r *http.Request){
 func Update(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	data, _ := io.ReadAll(r.Body)
-	
+
 	if len(data) == 0{
 		w.WriteHeader(http.StatusInternalServerError)
 		status,_ := json.Marshal("Please insert some value first")
 		w.Write(status)
 	}else{
 		
-		var Product1 models.Product
-		json.Unmarshal(data, &Product1)
+		var Cathering1 models.Cathering
+		json.Unmarshal(data, &Cathering1)
 		
 		
-		result := models.DB.Save(&Product1)
+		result := models.DB.Save(&Cathering1)
 		
 		if result.Error != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -99,7 +98,7 @@ func Update(w http.ResponseWriter, r *http.Request){
 			w.Write(status)
 		}else{
 			w.WriteHeader(http.StatusOK)
-			status,_ := json.Marshal(map[string]any{"data": Product1, "success" : true, "message": "Data has been updated"})
+			status,_ := json.Marshal(map[string]any{"data": Cathering1, "success" : true, "message": "Data has been updated"})
 			w.Write(status)
 		}
 	}
@@ -114,11 +113,11 @@ func Delete(w http.ResponseWriter, r *http.Request){
 	decoder := json.NewDecoder(r.Body)
 	
 	var idData models.IdData
-	var Product models.Product
+	var Cathering models.Cathering
 	decoder.Decode(&idData)
 
 	
-	result := models.DB.Delete(&Product, idData.Id)
+	result := models.DB.Delete(&Cathering, idData.Id)
 	fmt.Println(result.RowsAffected)
 	if result.Error != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -126,7 +125,7 @@ func Delete(w http.ResponseWriter, r *http.Request){
 		w.Write(status)
 	}else if result.RowsAffected == 0{
 		w.WriteHeader(http.StatusInternalServerError)
-		status,_ := json.Marshal(map[string]any{"status": "failed", "message": "No Products Found", "statusCode":100})
+		status,_ := json.Marshal(map[string]any{"status": "failed", "message": "No Catherings Found", "statusCode":100})
 		w.Write(status)
 	}else{
 		w.WriteHeader(http.StatusOK)

@@ -1,4 +1,4 @@
-package productcontroller
+package categorycontroller
 
 import (
 	"encoding/json"
@@ -18,10 +18,10 @@ import (
 func Index(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	
-	var Product []models.Product
-	models.DB.Find(&Product)
-	response, _  := json.Marshal(map[string]any{"status": "success","data":Product, "statusCode":200})
-	if err := models.DB.Find(&Product).Error; err != nil {
+	var Category []models.Category
+	models.DB.Find(&Category)
+	response, _  := json.Marshal(map[string]any{"status": "success","data":Category, "statusCode":200})
+	if err := models.DB.Find(&Category).Error; err != nil {
 		w.WriteHeader(http.StatusExpectationFailed)
 		w.Write([]byte(err.Error()))
 		return
@@ -35,8 +35,8 @@ func Index(w http.ResponseWriter, r *http.Request){
 func Show(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	id := mux.Vars(r)["id"]
-	var Product []models.Product
-	result := models.DB.First(&Product, id)
+	var Category []models.Category
+	result := models.DB.First(&Category, id)
 	fmt.Println(result.RowsAffected)
 	fmt.Println(result.RowsAffected == 0)
 	if result.Error != nil {
@@ -45,10 +45,10 @@ func Show(w http.ResponseWriter, r *http.Request){
 		w.Write(response)
 	}else if result.RowsAffected == 0{
 		w.WriteHeader(http.StatusInternalServerError)
-		status,_ := json.Marshal(map[string]any{"status": "failed", "message": "No Products Found"})
+		status,_ := json.Marshal(map[string]any{"status": "failed", "message": "No Categorys Found"})
 		w.Write(status)
 	}else{
-		response, _  := json.Marshal(map[string]any{"status": "success","data":Product, "statusCode":200})
+		response, _  := json.Marshal(map[string]any{"status": "success","data":Category, "statusCode":200})
 		w.WriteHeader(http.StatusOK)
 		w.Write(response)
 	}
@@ -61,16 +61,16 @@ func Create(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 
 	decoder := json.NewDecoder(r.Body)
-    var Product models.Product
-    decoder.Decode(&Product)
-	result := models.DB.Create(&Product)
+    var Category models.Category
+    decoder.Decode(&Category)
+	result := models.DB.Create(&Category)
 	if result.Error != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		status,_ := json.Marshal(result.Error)
 		w.Write(status)
 	}else{
 		w.WriteHeader(http.StatusOK)
-		status,_ := json.Marshal(map[string]any{"status": "success","data":Product, "statusCode":200})
+		status,_ := json.Marshal(map[string]any{"status": "success","data":Category, "statusCode":200})
 		w.Write(status)
 	}
 	
@@ -86,11 +86,11 @@ func Update(w http.ResponseWriter, r *http.Request){
 		w.Write(status)
 	}else{
 		
-		var Product1 models.Product
-		json.Unmarshal(data, &Product1)
+		var Category1 models.Category
+		json.Unmarshal(data, &Category1)
 		
 		
-		result := models.DB.Save(&Product1)
+		result := models.DB.Save(&Category1)
 		
 		if result.Error != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -99,7 +99,7 @@ func Update(w http.ResponseWriter, r *http.Request){
 			w.Write(status)
 		}else{
 			w.WriteHeader(http.StatusOK)
-			status,_ := json.Marshal(map[string]any{"data": Product1, "success" : true, "message": "Data has been updated"})
+			status,_ := json.Marshal(map[string]any{"data": Category1, "success" : true, "message": "Data has been updated"})
 			w.Write(status)
 		}
 	}
@@ -114,11 +114,11 @@ func Delete(w http.ResponseWriter, r *http.Request){
 	decoder := json.NewDecoder(r.Body)
 	
 	var idData models.IdData
-	var Product models.Product
+	var Category models.Category
 	decoder.Decode(&idData)
 
 	
-	result := models.DB.Delete(&Product, idData.Id)
+	result := models.DB.Delete(&Category, idData.Id)
 	fmt.Println(result.RowsAffected)
 	if result.Error != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -126,7 +126,7 @@ func Delete(w http.ResponseWriter, r *http.Request){
 		w.Write(status)
 	}else if result.RowsAffected == 0{
 		w.WriteHeader(http.StatusInternalServerError)
-		status,_ := json.Marshal(map[string]any{"status": "failed", "message": "No Products Found", "statusCode":100})
+		status,_ := json.Marshal(map[string]any{"status": "failed", "message": "No Categorys Found", "statusCode":100})
 		w.Write(status)
 	}else{
 		w.WriteHeader(http.StatusOK)

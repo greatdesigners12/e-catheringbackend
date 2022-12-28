@@ -13,6 +13,7 @@ import (
 
 	"github.com/rest-api/golang/models"
 	"golang.org/x/crypto/bcrypt"
+	"strconv"
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +22,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	var userInput models.User
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&userInput); err != nil {
-		response := map[string]string{"message": err.Error()}
+		response := map[string]string{"message": err.Error(), "token" : "", "status" : "400", "userId" : ""}
 		helper.ResponseJSON(w, http.StatusBadRequest, response)
 		return
 	}
@@ -32,11 +33,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err := models.DB.Where("email = ?", userInput.Email).First(&user).Error; err != nil {
 		switch err {
 		case gorm.ErrRecordNotFound:
-			response := map[string]string{"message": "Email atau password salah"}
+			response := map[string]string{"message": "Email atau password salah", "token" : "", "status" : "400", "userId" : ""}
 			helper.ResponseJSON(w, http.StatusUnauthorized, response)
 			return
 		default:
-			response := map[string]string{"message": err.Error()}
+			response := map[string]string{"message": err.Error(), "token" : "", "status" : "400", "userId" : ""}
 			helper.ResponseJSON(w, http.StatusInternalServerError, response)
 			return
 		}
@@ -44,7 +45,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	// cek apakah password valid
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(userInput.Password)); err != nil {
-		response := map[string]string{"message": "Username atau password salah"}
+		response := map[string]string{"message": "Password salah", "token" : "", "status" : "400", "userId" : ""}
 		helper.ResponseJSON(w, http.StatusUnauthorized, response)
 		return
 	}
@@ -64,7 +65,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	// signed token
 	token, err := tokenAlgo.SignedString(config.JWT_KEY)
 	if err != nil {
-		response := map[string]string{"message": err.Error()}
+		response := map[string]string{"message": err.Error(), "token" : "", "status" : "400", "userId" : ""}
 		helper.ResponseJSON(w, http.StatusInternalServerError, response)
 		return
 	}
@@ -77,7 +78,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	})
 
-	response := map[string]string{"message": "login berhasil"}
+	response := map[string]string{"message": "login berhasil", "token" : token, "status" : "200", "userId" : strconv.FormatInt(int64(userInput.Id), 10)}
 	helper.ResponseJSON(w, http.StatusOK, response)
 }
 
@@ -104,7 +105,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := map[string]string{"message": "success"}
+	response := map[string]string{"message": "success", "status" : "200"}
 	helper.ResponseJSON(w, http.StatusOK, response)
 }
 
@@ -118,6 +119,6 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   -1,
 	})
 
-	response := map[string]string{"message": "logout berhasil"}
+	response := map[string]string{"message": "logout berhasil", "status" : "200"}
 	helper.ResponseJSON(w, http.StatusOK, response)
 }

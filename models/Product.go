@@ -6,5 +6,5 @@ type Product struct{
 	Nama string `gorm:"type:varchar(255)" json:"nama"`
 	Deskripsi string `gorm:"type:text" json:"deskripsi"`
 	Harga int64 `gorm:"type:bigint(20)" json:"harga"`
-	Stock_persediaan int64 `gorm:"type:bigint(20)" json:"stock_persediaan"`
+	Image_Url string `gorm:"type:text" json:"image_url"`
 }
