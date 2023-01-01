@@ -10,6 +10,7 @@ import (
 	"github.com/rest-api/golang/controllers/productcontroller"
 	"github.com/rest-api/golang/controllers/categorycontroller"
 	"github.com/rest-api/golang/controllers/catheringcontroller"
+	"github.com/rest-api/golang/controllers/cartcontroller"
 	"github.com/rest-api/golang/models"
 
 	"github.com/gorilla/mux"
@@ -25,7 +26,10 @@ func main() {
 	route.HandleFunc("/logout", authcontroller.Logout).Methods("GET")
 	r := route.PathPrefix("").Subrouter()
 	r.HandleFunc("/products", productcontroller.Index).Methods("GET")
+	r.HandleFunc("/{cathering_id}/getAllDailyProducts", productcontroller.GetAllDailyProduct).Methods("GET")
+	r.HandleFunc("/getAllProductsWithCartChecker", productcontroller.GetAllProductsWithCartChecker).Methods("GET")
 	r.HandleFunc("/getProduct/{id}", productcontroller.Show).Methods("GET")
+	r.HandleFunc("/searchAll/{search}", catheringcontroller.SearchAll).Methods("GET")
 	r.HandleFunc("/createProduct", productcontroller.Create).Methods("POST")
 	r.HandleFunc("/updateProduct", productcontroller.Update).Methods("POST")
 	r.HandleFunc("/deleteProduct", productcontroller.Delete).Methods("DELETE")
@@ -34,9 +38,17 @@ func main() {
 	r.HandleFunc("/createCategory", productcontroller.Create).Methods("POST")
 	r.HandleFunc("/updateCategory", productcontroller.Update).Methods("POST")
 	r.HandleFunc("/deleteCategory", productcontroller.Delete).Methods("DELETE")
+	r.HandleFunc("/getAllCarts", cartcontroller.Index).Methods("GET")
+	r.HandleFunc("/getCart/{id}", cartcontroller.Show).Methods("GET")
+	r.HandleFunc("/getCart", cartcontroller.GetCartBasedOnCathering).Methods("GET")
+	r.HandleFunc("/getCartByUserId", cartcontroller.GetCartBasedOnUserId).Methods("GET")
+	r.HandleFunc("/createCart", cartcontroller.Create).Methods("POST")
+	r.HandleFunc("/updateCart", cartcontroller.Update).Methods("POST")
+	r.HandleFunc("/removeCart", cartcontroller.RemoveCart).Methods("DELETE")
 	rCathering := route.PathPrefix("").Subrouter()
 	rCathering.HandleFunc("/catherings", catheringcontroller.Index).Methods("GET")
 	rCathering.HandleFunc("/getCathering/{id}", catheringcontroller.Show).Methods("GET")
+	rCathering.HandleFunc("/getCatheringByGenre/{genre}", catheringcontroller.GetAllCatheringByGenre).Methods("GET")
 	rCathering.HandleFunc("/createCathering", catheringcontroller.Create).Methods("POST")
 	rCathering.HandleFunc("/updateCathering", catheringcontroller.Update).Methods("POST")
 	rCathering.HandleFunc("/deleteCathering", catheringcontroller.Delete).Methods("DELETE")

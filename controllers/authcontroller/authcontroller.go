@@ -13,7 +13,6 @@ import (
 
 	"github.com/rest-api/golang/models"
 	"golang.org/x/crypto/bcrypt"
-	"strconv"
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +77,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	})
 
-	response := map[string]string{"message": "login berhasil", "token" : token, "status" : "200", "userId" : strconv.FormatInt(int64(userInput.Id), 10)}
+	response := map[string]any{"message": "login berhasil", "token" : token, "status" : "200", "userId" : user.Id}
 	helper.ResponseJSON(w, http.StatusOK, response)
 }
 

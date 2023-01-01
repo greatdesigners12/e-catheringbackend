@@ -15,11 +15,49 @@ import (
 	"github.com/rest-api/golang/models"
 )
 
+func GetAllProductsWithCartChecker(w http.ResponseWriter, r *http.Request){
+
+	w.Header().Set("Content-Type", "application/json")
+	user_id := r.FormValue("user_id")
+	cathering_id := r.FormValue("cathering_id")
+	var Product []models.Product
+	var products_id []int
+	models.DB.Where("cathering_id", cathering_id).Find(&Product)
+	models.DB.Raw("SELECT c.product_id  FROM products as p LEFT JOIN carts AS c ON p.id = c.product_id WHERE c.user_id = ? AND c.cathering_id = ?  ", user_id, cathering_id).Scan(&products_id)
+	response, _  := json.Marshal(map[string]any{"status": "success","data":Product, "carts" : products_id, "statusCode":200})
+	if err := models.DB.Find(&Product).Error; err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	
+	w.Write(response)
+}
+
 func Index(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	
 	var Product []models.Product
-	models.DB.Find(&Product)
+	models.DB.Model(&Product).Preload("Cathering").Find(&Product)
+	response, _  := json.Marshal(map[string]any{"status": "success","data":Product, "statusCode":200})
+	if err := models.DB.Find(&Product).Error; err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	
+	w.Write(response)
+}
+
+func GetAllDailyProduct(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	id := mux.Vars(r)["cathering_id"]
+	var Product []models.Product
+	models.DB.Where("type=?", "daily").Where("cathering_id", id).Find(&Product)
 	response, _  := json.Marshal(map[string]any{"status": "success","data":Product, "statusCode":200})
 	if err := models.DB.Find(&Product).Error; err != nil {
 		w.WriteHeader(http.StatusExpectationFailed)

@@ -9,5 +9,5 @@ type Cathering struct{
 	Image_logo string `gorm:"type:text" json:"image_logo"`
 	Image_menu string `gorm:"type:text" json:"image_menu"`
 	Is_verified int64 `gorm:"type:tinyint(1)" json:"is_verified"`
-
+	Average_rating float64 `gorm:"type:float" json:"average_rating"`
 }

@@ -16,8 +16,11 @@ func ConnectDatabase() {
 	}
 
 	db.AutoMigrate(&User{})
-	db.AutoMigrate(&Product{})
+	
 	db.AutoMigrate(&Cathering{})
 	db.AutoMigrate(&Category{})
+	db.AutoMigrate(&Cart{})
+	
+
 	DB = db
 }
