@@ -111,6 +111,30 @@ func GetCartBasedOnUserId(w http.ResponseWriter, r *http.Request){
 
 }
 
+func GetAddedProductByCathering(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	user_id := r.FormValue("user_id")
+	cathering_id := r.FormValue("cathering_id")
+	var Cart []models.Cart
+	result := models.DB.Where("user_id", user_id).Where("cathering_id", cathering_id).Preload("Cathering").Preload("Product").Preload("User").First(&Cart)
+	fmt.Println(result.RowsAffected)
+	fmt.Println(result.RowsAffected == 0)
+	if result.Error != nil {
+		response, _  := json.Marshal(map[string]any{"status": "failed", "message": result.Error})
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(response)
+	}else if result.RowsAffected == 0{
+		w.WriteHeader(http.StatusInternalServerError)
+		status,_ := json.Marshal(map[string]any{"status": "failed", "message": "No Categorys Found"})
+		w.Write(status)
+	}else{
+		response, _  := json.Marshal(map[string]any{"status": "success","data":Cart, "statusCode":200})
+		w.WriteHeader(http.StatusOK)
+		w.Write(response)
+	}
+
+}
+
 func Show(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	id := mux.Vars(r)["id"]

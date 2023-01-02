@@ -9,10 +9,12 @@ type TransactionGroup struct {
 	TotalPrice               int64                    `gorm:"type:bigint(20)" json:"total_price"`
 	DateTransaction          time.Time                `gorm:"type:datetime" json:"dateTransaction"`
 	User_id                  int64                  `gorm:"type:int(11)" json:"user_id"`
+	Cathering_id             int64                  `gorm:"type:int(11)" json:"cathering_id"`
 	User                     User                     `gorm:"foreignKey:User_id"`
 	Shipping_price           int64                    `gorm:"type:bigint(20)" json:"shipping_price"`
 	Status                   string                 `gorm:"type:varchar(100)" json:"status"`  
 	Snap_token               string                `gorm:"type:text" json:"snap_token"`
+ 	Daily_time               string                `gorm:"type:varchar(100)" json:"daily_time"`
 }
 
 type TransactionGroupRelation struct {

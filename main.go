@@ -11,6 +11,7 @@ import (
 	"github.com/rest-api/golang/controllers/categorycontroller"
 	"github.com/rest-api/golang/controllers/catheringcontroller"
 	"github.com/rest-api/golang/controllers/cartcontroller"
+	"github.com/rest-api/golang/controllers/transactioncontroller"
 	"github.com/rest-api/golang/models"
 
 	"github.com/gorilla/mux"
@@ -29,6 +30,8 @@ func main() {
 	r.HandleFunc("/{cathering_id}/getAllDailyProducts", productcontroller.GetAllDailyProduct).Methods("GET")
 	r.HandleFunc("/getAllProductsWithCartChecker", productcontroller.GetAllProductsWithCartChecker).Methods("GET")
 	r.HandleFunc("/getProduct/{id}", productcontroller.Show).Methods("GET")
+	r.HandleFunc("/createTransaction", transactioncontroller.CreateTransaction).Methods("POST")
+	r.HandleFunc("/searchAll/", catheringcontroller.SearchAll).Methods("GET")
 	r.HandleFunc("/searchAll/{search}", catheringcontroller.SearchAll).Methods("GET")
 	r.HandleFunc("/createProduct", productcontroller.Create).Methods("POST")
 	r.HandleFunc("/updateProduct", productcontroller.Update).Methods("POST")
@@ -41,6 +44,7 @@ func main() {
 	r.HandleFunc("/getAllCarts", cartcontroller.Index).Methods("GET")
 	r.HandleFunc("/getCart/{id}", cartcontroller.Show).Methods("GET")
 	r.HandleFunc("/getCart", cartcontroller.GetCartBasedOnCathering).Methods("GET")
+	r.HandleFunc("/getAllCartProduct", cartcontroller.GetAddedProductByCathering).Methods("GET")
 	r.HandleFunc("/getCartByUserId", cartcontroller.GetCartBasedOnUserId).Methods("GET")
 	r.HandleFunc("/createCart", cartcontroller.Create).Methods("POST")
 	r.HandleFunc("/updateCart", cartcontroller.Update).Methods("POST")
