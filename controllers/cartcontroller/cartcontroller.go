@@ -116,7 +116,7 @@ func GetAddedProductByCathering(w http.ResponseWriter, r *http.Request){
 	user_id := r.FormValue("user_id")
 	cathering_id := r.FormValue("cathering_id")
 	var Cart []models.Cart
-	result := models.DB.Where("user_id", user_id).Where("cathering_id", cathering_id).Preload("Cathering").Preload("Product").Preload("User").First(&Cart)
+	result := models.DB.Where("user_id", user_id).Where("cathering_id", cathering_id).Preload("Cathering").Preload("Product").Preload("User.UserInformation").First(&Cart)
 	fmt.Println(result.RowsAffected)
 	fmt.Println(result.RowsAffected == 0)
 	if result.Error != nil {

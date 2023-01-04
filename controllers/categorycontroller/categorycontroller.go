@@ -79,7 +79,7 @@ func Create(w http.ResponseWriter, r *http.Request){
 func Update(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	data, _ := io.ReadAll(r.Body)
-	
+	id := mux.Vars(r)["id"]
 	if len(data) == 0{
 		w.WriteHeader(http.StatusInternalServerError)
 		status,_ := json.Marshal("Please insert some value first")
@@ -90,7 +90,7 @@ func Update(w http.ResponseWriter, r *http.Request){
 		json.Unmarshal(data, &Category1)
 		
 		
-		result := models.DB.Save(&Category1)
+		result := models.DB.Model(&Category1).Where("id", id).Updates(&Category1)
 		
 		if result.Error != nil {
 			w.WriteHeader(http.StatusInternalServerError)

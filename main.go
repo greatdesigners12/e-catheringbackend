@@ -39,7 +39,7 @@ func main() {
 	r.HandleFunc("/getAllCategories", categorycontroller.Index).Methods("GET")
 	r.HandleFunc("/getCategory/{id}", productcontroller.Show).Methods("GET")
 	r.HandleFunc("/createCategory", productcontroller.Create).Methods("POST")
-	r.HandleFunc("/updateCategory", productcontroller.Update).Methods("POST")
+	r.HandleFunc("/updateCategory/{id}", categorycontroller.Update).Methods("POST")
 	r.HandleFunc("/deleteCategory", productcontroller.Delete).Methods("DELETE")
 	r.HandleFunc("/getAllCarts", cartcontroller.Index).Methods("GET")
 	r.HandleFunc("/getCart/{id}", cartcontroller.Show).Methods("GET")
