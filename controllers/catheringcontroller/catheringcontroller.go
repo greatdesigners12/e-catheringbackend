@@ -130,6 +130,7 @@ func Create(w http.ResponseWriter, r *http.Request){
 func Update(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	data, _ := io.ReadAll(r.Body)
+	id := mux.Vars(r)["id"]
 
 	if len(data) == 0{
 		w.WriteHeader(http.StatusInternalServerError)
@@ -141,7 +142,7 @@ func Update(w http.ResponseWriter, r *http.Request){
 		json.Unmarshal(data, &Cathering1)
 		
 		
-		result := models.DB.Save(&Cathering1)
+		result := models.DB.Model(&Cathering1).Where("user_id", id).Updates(&Cathering1)
 		
 		if result.Error != nil {
 			w.WriteHeader(http.StatusInternalServerError)

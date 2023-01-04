@@ -54,7 +54,7 @@ func main() {
 	rCathering.HandleFunc("/getCathering/{id}", catheringcontroller.Show).Methods("GET")
 	rCathering.HandleFunc("/getCatheringByGenre/{genre}", catheringcontroller.GetAllCatheringByGenre).Methods("GET")
 	rCathering.HandleFunc("/createCathering", catheringcontroller.Create).Methods("POST")
-	rCathering.HandleFunc("/updateCathering", catheringcontroller.Update).Methods("POST")
+	rCathering.HandleFunc("/updateCathering/{id}", catheringcontroller.Update).Methods("POST")
 	rCathering.HandleFunc("/deleteCathering", catheringcontroller.Delete).Methods("DELETE")
 	// r.Use(middlewares.JWTMiddleware)
 	api := route.PathPrefix("/api").Subrouter()
