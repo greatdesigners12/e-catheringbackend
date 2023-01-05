@@ -29,7 +29,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	// ambil data user berdasarkan username
 	var user models.User
-	if err := models.DB.Where("email = ?", userInput.Email).First(&user).Error; err != nil {
+	if err := models.DB.Where("email = ?", userInput.Email).Preload("Role").First(&user).Error; err != nil {
 		switch err {
 		case gorm.ErrRecordNotFound:
 			response := map[string]string{"message": "Email atau password salah", "token" : "", "status" : "400", "userId" : ""}
@@ -77,7 +77,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	})
 
-	response := map[string]any{"message": "login berhasil", "token" : token, "status" : "200", "userId" : user.Id}
+	response := map[string]any{"message": "login berhasil", "role" : user.Role.Role,"token" : token, "status" : "200",  "userId" : user.Id}
 	helper.ResponseJSON(w, http.StatusOK, response)
 }
 

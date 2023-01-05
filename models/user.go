@@ -5,7 +5,8 @@ type User struct {
 	Id          int64  `gorm:"primaryKey;autoIncrement" json:"id"`
 	Email string `gorm:"varchar(255)" json:"email"`
 	Password    string `gorm:"text" json:"password"`
-	Role    string `gorm:"varchar(100)" json:"role"`
+	Role_id    int `gorm:"int(11)" json:"role_id"`
+	Role       Role `gorm:"foreignKey:role_id"`
 	UserInformation UserInformation `gorm:"foreignKey:User_id"`
 }
 
