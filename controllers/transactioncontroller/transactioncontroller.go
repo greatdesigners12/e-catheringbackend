@@ -6,21 +6,26 @@ import (
 	"time"
 
 	"net/http"
-
-	"github.com/rest-api/golang/helper"
+	
 
 	"github.com/rest-api/golang/models"
-	"golang.org/x/crypto/bcrypt"
+	
+	"math/rand"
+	"github.com/gorilla/mux"
 )
 
 type TransactionRequest struct{
 	Products []models.TransactionProduct
+	Carts_id []int
 	Cathering_id int
 	User_id int
 	Shipping_price int
 	Total_price int
-	Daily_time string 
+	Full_address string 
+	Status string
 }
+
+
 
 func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 
@@ -29,10 +34,17 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var result TransactionRequest
     
-	
 	// var TransactionProduct models.TransactionProduct
 	err := decoder.Decode(&result)
 	fmt.Println(err)
+	rand.Seed(time.Now().UnixNano())
+
+	var chars = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0987654321")
+    str := make([]rune, 10)
+    for i := range str {
+        str[i] = chars[rand.Intn(len(chars))]
+    }
+	var carts []models.Cart
 	var TransactionGroup models.TransactionGroup
 	TransactionGroup.Shipping_price = int64(result.Shipping_price)
 	TransactionGroup.TotalPrice = int64(result.Total_price)
@@ -40,65 +52,73 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	TransactionGroup.User_id = int64(result.User_id)
 	TransactionGroup.Cathering_id = int64(result.Cathering_id)
 	TransactionGroup.DateTransaction = time.Now()
-	TransactionGroup.Daily_time = result.Daily_time
-	fmt.Println(result)
+	TransactionGroup.Full_address = result.Full_address
+	TransactionGroup.Id_transaction = string(str)
+	TransactionGroup.Status = "Belum terbayar"
+	
 	models.DB.Create(&TransactionGroup)
 	models.DB.Create(&result.Products)
 	for _, product := range result.Products {
 		var TransactionRelation models.TransactionGroupRelation
+		
 		TransactionRelation.Transaction_group_id = TransactionGroup.Id
 		TransactionRelation.Transaction_product_id = product.Id
 		models.DB.Create(&TransactionRelation)
-	  }
-	// result := models.DB.Create(&Product)
-	// if result.Error != nil {
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// 	status,_ := json.Marshal(result.Error)
-	// 	w.Write(status)
-	// }else{
-	// 	w.WriteHeader(http.StatusOK)
-	// 	status,_ := json.Marshal(map[string]any{"status": "success","data":Product, "statusCode":200})
-	// 	w.Write(status)
-	// }
+	}
+	fmt.Println(result.Carts_id)
+	models.DB.Delete(&carts, result.Carts_id)
+	
+	
+	w.WriteHeader(http.StatusOK)
+	status,_ := json.Marshal(map[string]any{"status": "success", "data" : result	, "statusCode":200})
+	w.Write(status)
+	
 }
 
-func Register(w http.ResponseWriter, r *http.Request) {
+func GetAllTransactionGroups(w http.ResponseWriter, r *http.Request) {
 
-	// mengambil inputan json
-	var userInput models.User
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&userInput); err != nil {
-		response := map[string]string{"message": err.Error()}
-		helper.ResponseJSON(w, http.StatusBadRequest, response)
-		return
-	}
-	defer r.Body.Close()
+	w.Header().Set("Content-Type", "application/json")
 
-	// hash pass menggunakan bcrypt
-	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(userInput.Password), bcrypt.DefaultCost)
-	userInput.Password = string(hashPassword)
+	w.Header().Set("Content-Type", "application/json")
+	user_id := mux.Vars(r)["user_id"]
+	
+	var Transactions []models.TransactionGroup
 
-	// insert ke database
-	if err := models.DB.Create(&userInput).Error; err != nil {
-		response := map[string]string{"message": err.Error()}
-		helper.ResponseJSON(w, http.StatusInternalServerError, response)
+	result := models.DB.Where("user_id", user_id).Preload("TransactionGroupRelation.TransactionProduct").Preload("Cathering").Find(&Transactions)
+	response, _  := json.Marshal(map[string]any{"status": "success","data":Transactions, "statusCode":200})
+	if err := result.Error; err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
-	response := map[string]string{"message": "success", "status" : "200"}
-	helper.ResponseJSON(w, http.StatusOK, response)
+	w.WriteHeader(http.StatusOK)
+	
+	w.Write(response)
+	
 }
 
-func Logout(w http.ResponseWriter, r *http.Request) {
-	// hapus token yang ada di cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:     "token",
-		Path:     "/",
-		Value:    "",
-		HttpOnly: true,
-		MaxAge:   -1,
-	})
+func GetTransactionGroupById(w http.ResponseWriter, r *http.Request) {
 
-	response := map[string]string{"message": "logout berhasil", "status" : "200"}
-	helper.ResponseJSON(w, http.StatusOK, response)
+	w.Header().Set("Content-Type", "application/json")
+
+	w.Header().Set("Content-Type", "application/json")
+	transaction_id := mux.Vars(r)["transaction_id"]
+	
+	var Transactions models.TransactionGroup
+	
+	result := models.DB.Preload("TransactionGroupRelation.TransactionProduct").Preload("User.UserInformation").Find(&Transactions, transaction_id)
+	response, _  := json.Marshal(map[string]any{"status": "success","data":Transactions, "statusCode":200})
+	if err := result.Error; err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	
+	w.Write(response)
+	
 }
+
+

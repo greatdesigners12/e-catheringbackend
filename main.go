@@ -45,6 +45,8 @@ func main() {
 	r.HandleFunc("/getCart/{id}", cartcontroller.Show).Methods("GET")
 	r.HandleFunc("/getCart", cartcontroller.GetCartBasedOnCathering).Methods("GET")
 	r.HandleFunc("/getAllCartProduct", cartcontroller.GetAddedProductByCathering).Methods("GET")
+	r.HandleFunc("/getAllTransactionGroup/{user_id}", transactioncontroller.GetAllTransactionGroups).Methods("GET") 
+	r.HandleFunc("/getTransactionGroup/{transaction_id}", transactioncontroller.GetTransactionGroupById).Methods("GET")
 	r.HandleFunc("/getCartByUserId", cartcontroller.GetCartBasedOnUserId).Methods("GET")
 	r.HandleFunc("/createCart", cartcontroller.Create).Methods("POST")
 	r.HandleFunc("/updateCart", cartcontroller.Update).Methods("POST")
