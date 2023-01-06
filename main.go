@@ -24,6 +24,7 @@ func main() {
 
 	route.HandleFunc("/login", authcontroller.Login).Methods("POST")
 	route.HandleFunc("/register", authcontroller.Register).Methods("POST")
+	route.HandleFunc("/resetPassword", authcontroller.ResetPassword).Methods("POST")
 	route.HandleFunc("/logout", authcontroller.Logout).Methods("GET")
 	r := route.PathPrefix("").Subrouter()
 	r.HandleFunc("/products", productcontroller.Index).Methods("GET")

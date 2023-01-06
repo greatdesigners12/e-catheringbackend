@@ -85,7 +85,7 @@ func GetAllCatheringByGenre(w http.ResponseWriter, r *http.Request){
 	result := models.DB
 	if(genre == "cathering"){
 		result = result.Raw("SELECT c.*, AVG(r.rating) as average_rating FROM catherings as c LEFT JOIN reviews as r ON c.id = r.cathering_id GROUP BY c.id").Find(&Cathering)
-	}else if(genre == "PopularCathering"){
+	}else if(genre == "popular"){
 		result = result.Raw("SELECT c.*, AVG(r.rating) as average_rating FROM catherings as c LEFT JOIN reviews as r ON c.id = r.cathering_id GROUP BY c.id ORDER BY AVG(r.rating) DESC").Scan(&Cathering)
 	}else{
 		result = result.Raw("SELECT c.*, AVG(r.rating) as average_rating FROM catherings as c LEFT JOIN reviews as r ON c.id = r.cathering_id WHERE c.need_preorder = 0 GROUP BY c.id ORDER BY AVG(r.rating) DESC").Find(&Cathering)

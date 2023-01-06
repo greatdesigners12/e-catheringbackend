@@ -27,7 +27,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	// ambil data user berdasarkan username
+	// ambil data user berdasarkan email
 	var user models.User
 	if err := models.DB.Where("email = ?", userInput.Email).Preload("Role").First(&user).Error; err != nil {
 		switch err {
@@ -79,6 +79,54 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	response := map[string]any{"message": "login berhasil", "role" : user.Role.Role,"token" : token, "status" : "200",  "userId" : user.Id}
 	helper.ResponseJSON(w, http.StatusOK, response)
+}
+
+type ResetPasswordRequest struct{
+	User_id  int;
+	OldPassword string;
+	NewPassword string;
+
+}
+
+func ResetPassword(w http.ResponseWriter, r *http.Request) {
+	var data ResetPasswordRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&data); err != nil {
+		response := map[string]string{"message": err.Error()}
+		helper.ResponseJSON(w, http.StatusBadRequest, response)
+		return
+	}
+	defer r.Body.Close()
+
+	var user models.User
+	if err := models.DB.Where("id = ?", data.User_id).Preload("Role").First(&user).Error; err != nil {
+		switch err {
+		case gorm.ErrRecordNotFound:
+			response := map[string]string{"message": "Email atau password salah", "token" : "", "status" : "400", "userId" : ""}
+			helper.ResponseJSON(w, http.StatusUnauthorized, response)
+			return
+		default:
+			response := map[string]string{"message": err.Error(), "token" : "", "status" : "400", "userId" : ""}
+			helper.ResponseJSON(w, http.StatusInternalServerError, response)
+			return
+		}
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.OldPassword)); err != nil {
+		response := map[string]string{"message": "Password salah", "token" : "", "status" : "400", "userId" : ""}
+		helper.ResponseJSON(w, http.StatusUnauthorized, response)
+		return
+	}
+
+	newHashPassword, _ := bcrypt.GenerateFromPassword([]byte(data.NewPassword), bcrypt.DefaultCost)
+	data.NewPassword = string(newHashPassword)
+
+	models.DB.Model(&user).Update("password", newHashPassword)
+
+	response := map[string]any{"data" : user,"message": "Reset password berhasil", "status" : "200"}
+	helper.ResponseJSON(w, http.StatusOK, response)
+
+
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
