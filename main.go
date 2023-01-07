@@ -12,6 +12,7 @@ import (
 	"github.com/rest-api/golang/controllers/catheringcontroller"
 	"github.com/rest-api/golang/controllers/cartcontroller"
 	"github.com/rest-api/golang/controllers/transactioncontroller"
+	"github.com/rest-api/golang/controllers/userinformationcontroller"
 	"github.com/rest-api/golang/models"
 
 	"github.com/gorilla/mux"
@@ -51,12 +52,20 @@ func main() {
 	r.HandleFunc("/createCart", cartcontroller.Create).Methods("POST")
 	r.HandleFunc("/updateCart", cartcontroller.Update).Methods("POST")
 	r.HandleFunc("/removeCart", cartcontroller.RemoveCart).Methods("DELETE")
+	r.HandleFunc("/updateCatheringProfile/{id}", userinformationcontroller.Update).Methods("POST")
+
+	r.HandleFunc("/getUserInformation/{id}", userinformationcontroller.Show).Methods("GET")
+	r.HandleFunc("/createUserInformation", userinformationcontroller.Create).Methods("POST")
+	r.HandleFunc("/updateUserInformation", userinformationcontroller.Update).Methods("POST")
+
 	rCathering := route.PathPrefix("").Subrouter()
 	rCathering.HandleFunc("/catherings", catheringcontroller.Index).Methods("GET")
 	rCathering.HandleFunc("/getCathering/{id}", catheringcontroller.Show).Methods("GET")
+	rCathering.HandleFunc("/getCProfile/{id}", catheringcontroller.Profile).Methods("GET")
 	rCathering.HandleFunc("/getCatheringByGenre/{genre}", catheringcontroller.GetAllCatheringByGenre).Methods("GET")
 	rCathering.HandleFunc("/createCathering", catheringcontroller.Create).Methods("POST")
 	rCathering.HandleFunc("/updateCathering/{id}", catheringcontroller.Update).Methods("POST")
+	rCathering.HandleFunc("/updateApprove/{id}", catheringcontroller.Approve).Methods("POST")
 	rCathering.HandleFunc("/deleteCathering", catheringcontroller.Delete).Methods("DELETE")
 	// r.Use(middlewares.JWTMiddleware)
 	api := route.PathPrefix("/api").Subrouter()

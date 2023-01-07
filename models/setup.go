@@ -15,11 +15,14 @@ func ConnectDatabase() {
 		fmt.Println("Gagal koneksi database")
 	}
 
+
+
 	db.AutoMigrate(&User{})
 	
 	db.AutoMigrate(&Cathering{})
 	db.AutoMigrate(&Category{})
 	db.AutoMigrate(&Cart{})
+	db.AutoMigrate(&UserInformation{})
 	
 
 	DB = db

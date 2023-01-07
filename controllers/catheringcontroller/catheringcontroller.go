@@ -127,6 +127,32 @@ func Create(w http.ResponseWriter, r *http.Request){
 	
 }
 
+func Profile(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	id := mux.Vars(r)["id"]
+	var Cathering models.Cathering
+	result := models.DB.Where("user_id", id).First(&Cathering)
+	
+	
+	fmt.Println(result.RowsAffected == 0)
+	if result.Error != nil {
+		response, _  := json.Marshal(map[string]any{"status": "failed", "message": result.Error})
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(response)
+	}else if result.RowsAffected == 0{
+		w.WriteHeader(http.StatusInternalServerError)
+		status,_ := json.Marshal(map[string]any{"status": "failed", "message": "No Catherings Found"})
+		w.Write(status)
+	}else{
+		response, _  := json.Marshal(map[string]any{"status": "success","data":Cathering, "statusCode":200})
+		w.WriteHeader(http.StatusOK)
+		w.Write(response)
+	}
+
+
+	
+}
+
 func Update(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	data, _ := io.ReadAll(r.Body)
@@ -152,6 +178,39 @@ func Update(w http.ResponseWriter, r *http.Request){
 		}else{
 			w.WriteHeader(http.StatusOK)
 			status,_ := json.Marshal(map[string]any{"data": Cathering1, "success" : true, "message": "Data has been updated"})
+			w.Write(status)
+		}
+	}
+	
+	
+	
+}
+
+func Approve(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	data, _ := io.ReadAll(r.Body)
+	id := mux.Vars(r)["id"]
+
+	if len(data) == 0{
+		w.WriteHeader(http.StatusInternalServerError)
+		status,_ := json.Marshal("Please insert some value first")
+		w.Write(status)
+	}else{
+		
+		var Catherings models.Cathering
+		json.Unmarshal(data, &Catherings)
+		
+		
+		result := models.DB.Model(&Catherings).Where("id", id).Updates(&Catherings)
+		
+		if result.Error != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			
+			status,_ := json.Marshal(result.Error)
+			w.Write(status)
+		}else{
+			w.WriteHeader(http.StatusOK)
+			status,_ := json.Marshal(map[string]any{"data": Catherings, "success" : true, "message": "Data has been updated"})
 			w.Write(status)
 		}
 	}
