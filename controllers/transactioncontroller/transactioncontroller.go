@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
 	"net/http"
 	
 
@@ -26,6 +25,81 @@ type TransactionRequest struct{
 }
 
 
+func SetToSuccess(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	
+	id_transaction := mux.Vars(r)["id_transaction"]
+	
+	
+		
+	
+		var transactionGroup models.TransactionGroup
+		
+
+		result := models.DB.Model(&transactionGroup).Where("id_transaction", id_transaction).Update("status", "Terbayar")
+		
+		if result.Error != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			
+			status,_ := json.Marshal(result.Error)
+			w.Write(status)
+		}else{
+			w.WriteHeader(http.StatusOK)
+			status,_ := json.Marshal(map[string]any{"data": transactionGroup, "success" : true, "message": "Data has been updated"})
+			w.Write(status)
+		}
+	
+}
+
+func SetSnapToken(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	snap_token := r.FormValue("snap_token")
+	id_transaction := mux.Vars(r)["id_transaction"]
+	
+		var transactionGroup models.TransactionGroup
+		
+
+		result := models.DB.Model(&transactionGroup).Where("id_transaction", id_transaction).Update("snap_token", snap_token)
+		
+		if result.Error != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			
+			status,_ := json.Marshal(result.Error)
+			w.Write(status)
+		}else{
+			w.WriteHeader(http.StatusOK)
+			status,_ := json.Marshal(map[string]any{"data": transactionGroup, "success" : true, "message": "Data has been updated"})
+			w.Write(status)
+		}
+}
+
+func SetNewId(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	id_transaction := mux.Vars(r)["id_transaction"]
+	
+		var transactionGroup models.TransactionGroup
+		
+		rand.Seed(time.Now().UnixNano())
+
+		var chars = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0987654321")
+		str := make([]rune, 10)
+		for i := range str {
+			str[i] = chars[rand.Intn(len(chars))]
+		}
+
+		result := models.DB.Model(&transactionGroup).Where("id_transaction", id_transaction).Update("id_transaction", str)
+		
+		if result.Error != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			
+			status,_ := json.Marshal(result.Error)
+			w.Write(status)
+		}else{
+			w.WriteHeader(http.StatusOK)
+			status,_ := json.Marshal(map[string]any{"data": str, "success" : true, "message": "Data has been updated"})
+			w.Write(status)
+		}
+}
 
 func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 
@@ -48,7 +122,6 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	var TransactionGroup models.TransactionGroup
 	TransactionGroup.Shipping_price = int64(result.Shipping_price)
 	TransactionGroup.TotalPrice = int64(result.Total_price)
-	TransactionGroup.Status = "Belum dibayar"
 	TransactionGroup.User_id = int64(result.User_id)
 	TransactionGroup.Cathering_id = int64(result.Cathering_id)
 	TransactionGroup.DateTransaction = time.Now()
@@ -79,12 +152,11 @@ func GetAllTransactionGroups(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	w.Header().Set("Content-Type", "application/json")
 	user_id := mux.Vars(r)["user_id"]
 	
 	var Transactions []models.TransactionGroup
 
-	result := models.DB.Where("user_id", user_id).Preload("TransactionGroupRelation.TransactionProduct").Preload("Cathering").Find(&Transactions)
+	result := models.DB.Where("user_id", user_id).Preload("TransactionGroupRelation.TransactionProduct").Preload("Cathering").Order("id DESC").Find(&Transactions)
 	response, _  := json.Marshal(map[string]any{"status": "success","data":Transactions, "statusCode":200})
 	if err := result.Error; err != nil {
 		w.WriteHeader(http.StatusExpectationFailed)
@@ -102,7 +174,7 @@ func GetTransactionGroupById(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	w.Header().Set("Content-Type", "application/json")
+	
 	transaction_id := mux.Vars(r)["transaction_id"]
 	
 	var Transactions models.TransactionGroup
@@ -120,5 +192,4 @@ func GetTransactionGroupById(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 	
 }
-
 

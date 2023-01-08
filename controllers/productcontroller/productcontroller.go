@@ -6,7 +6,7 @@ import (
 
 	// "fmt"
 
-	"io"
+	
 	"net/http"
 
 	// "strconv"
@@ -20,10 +20,34 @@ func GetAllProductsWithCartChecker(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	user_id := r.FormValue("user_id")
 	cathering_id := r.FormValue("cathering_id")
+	priceOrder := r.FormValue("price_order")
+	productType := r.FormValue("product_type")
 	var Product []models.Product
 	var products_id []int
-	models.DB.Where("cathering_id", cathering_id).Find(&Product)
-	models.DB.Raw("SELECT c.product_id  FROM products as p LEFT JOIN carts AS c ON p.id = c.product_id WHERE c.user_id = ? AND c.cathering_id = ?  ", user_id, cathering_id).Scan(&products_id)
+	sqlStatement := "SELECT * FROM products WHERE cathering_id = ? AND ((CAST( NOW() AS Date ) BETWEEN start_date and due_date) OR start_date IS NULL OR due_date IS NULL)"
+	// SELECT * FROM products WHERE (CAST( NOW() AS Date ) BETWEEN start_date and due_date OR start_date IS NULL ; 
+	if(productType == "d"){
+		sqlStatement = sqlStatement + "AND type = 'daily'"
+		
+	}else if(productType == "r"){
+		sqlStatement = sqlStatement + "AND type = 'recurring'"
+	}
+
+
+
+	if(priceOrder == "h"){
+		sqlStatement = sqlStatement + "ORDER BY harga DESC"
+	}else if(priceOrder == "l"){
+		sqlStatement = sqlStatement + "ORDER BY harga ASC"
+	}
+
+	
+
+	models.DB.Raw(sqlStatement, cathering_id).Find(&Product)
+
+	
+	
+	models.DB.Raw("SELECT c.product_id  FROM products as p LEFT JOIN carts AS c ON p.id = c.product_id WHERE c.user_id = ? AND c.cathering_id = ? ", user_id, cathering_id).Scan(&products_id)
 	response, _  := json.Marshal(map[string]any{"status": "success","data":Product, "carts" : products_id, "statusCode":200})
 	if err := models.DB.Find(&Product).Error; err != nil {
 		w.WriteHeader(http.StatusExpectationFailed)
@@ -73,10 +97,9 @@ func GetAllDailyProduct(w http.ResponseWriter, r *http.Request){
 func Show(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	id := mux.Vars(r)["id"]
-	var Product []models.Product
+	var Product models.Product
 	result := models.DB.First(&Product, id)
-	fmt.Println(result.RowsAffected)
-	fmt.Println(result.RowsAffected == 0)
+
 	if result.Error != nil {
 		response, _  := json.Marshal(map[string]any{"status": "failed", "message": result.Error})
 		w.WriteHeader(http.StatusInternalServerError)
@@ -94,6 +117,7 @@ func Show(w http.ResponseWriter, r *http.Request){
 
 	
 }
+
 
 func Create(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
@@ -116,19 +140,15 @@ func Create(w http.ResponseWriter, r *http.Request){
 
 func Update(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
-	data, _ := io.ReadAll(r.Body)
+	decoder := json.NewDecoder(r.Body)
+	product_id := mux.Vars(r)["product_id"]
 	
-	if len(data) == 0{
-		w.WriteHeader(http.StatusInternalServerError)
-		status,_ := json.Marshal("Please insert some value first")
-		w.Write(status)
-	}else{
 		
 		var Product1 models.Product
-		json.Unmarshal(data, &Product1)
+		decoder.Decode(&Product1)
 		
-		
-		result := models.DB.Save(&Product1)
+		fmt.Println(Product1.Harga)
+		result := models.DB.Model(&Product1).Where("id", product_id).Updates(Product1)
 		
 		if result.Error != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -140,11 +160,49 @@ func Update(w http.ResponseWriter, r *http.Request){
 			status,_ := json.Marshal(map[string]any{"data": Product1, "success" : true, "message": "Data has been updated"})
 			w.Write(status)
 		}
-	}
+	
 	
 	
 	
 }
+
+func GetAllProductByUserId(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	id := mux.Vars(r)["user_id"]
+	var Product []models.Product
+	var Cathering models.Cathering
+	models.DB.Where("user_id", id).First(&Cathering)
+	models.DB.Where("type=?", "daily").Where("cathering_id", Cathering.Id).Find(&Product)
+	response, _  := json.Marshal(map[string]any{"status": "success","data":Product, "statusCode":200})
+	if err := models.DB.Find(&Product).Error; err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	
+	w.Write(response)
+}
+
+func DeleteProductByProductId(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	id := mux.Vars(r)["product_id"]
+	var Product models.Product
+
+	models.DB.Delete(&Product, id)
+	response, _  := json.Marshal(map[string]any{"status": "success","data":Product, "statusCode":200})
+	if err := models.DB.Find(&Product).Error; err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	
+	w.Write(response)
+}
+
 
 func Delete(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")

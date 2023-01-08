@@ -109,6 +109,33 @@ func GetAllCatheringByGenre(w http.ResponseWriter, r *http.Request){
 	
 }
 
+func GetAllCatheringByPopularity(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	
+	var Cathering []models.Cathering
+	limit := r.FormValue("limit")
+
+	result := models.DB.Raw("SELECT c.*, AVG(r.rating) as average_rating FROM catherings as c LEFT JOIN reviews as r ON c.id = r.cathering_id GROUP BY c.id LIMIT ?", limit).Find(&Cathering)
+	
+	
+	if result.Error != nil {
+		response, _  := json.Marshal(map[string]any{"status": "failed", "message": result.Error})
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(response)
+	}else if result.RowsAffected == 0{
+		w.WriteHeader(http.StatusInternalServerError)
+		status,_ := json.Marshal(map[string]any{"status": "failed", "message": "No Catherings Found"})
+		w.Write(status)
+	}else{
+		response, _  := json.Marshal(map[string]any{"status": "success","data":Cathering, "statusCode":200})
+		w.WriteHeader(http.StatusOK)
+		w.Write(response)
+	}
+
+
+	
+}
+
 func Create(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	decoder := json.NewDecoder(r.Body)

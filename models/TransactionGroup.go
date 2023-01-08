@@ -30,4 +30,5 @@ type TransactionProduct struct{
 	Name     string   `gorm:"type:text" json:"name"`
 	Price    int64    `gorm:"type:bigint(20)" json:"price"`
 	Time     int   `gorm:"type:int(10)" json:"time"`
+	Portion int   `gorm:"type:int(10)" json:"portion"`
 }
