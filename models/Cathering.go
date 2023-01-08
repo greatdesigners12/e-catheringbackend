@@ -1,13 +1,17 @@
 package models
 
-type Cathering struct{
-	Id int64 `gorm:"primaryKey" json:"id"`
-	User_id string `gorm:"type:int(11)" json:"user_id"`	
-	Nama string `gorm:"type:varchar(255)" json:"nama"`
-	Tanggal_register string `gorm:"type:date" json:"tanggal_register"`
-	Deskripsi string `gorm:"type:text" json:"deskripsi"`
-	Image_logo string `gorm:"type:text" json:"image_logo"`
-	Image_menu string `gorm:"type:text" json:"image_menu"`
-	Is_verified string `gorm:"type:varchar(1)" json:"is_verified"`
-	Average_rating float64 `gorm:"type:float" json:"average_rating"`
+import "time"
+
+type Cathering struct {
+	Id               int64     `gorm:"primaryKey" json:"id"`
+	User_id          int64   `gorm:"type:int(11)" json:"user_id"`
+	Nama             string    `gorm:"type:varchar(255)" json:"nama"`
+	Tanggal_register time.Time `gorm:"type:date" json:"tanggal_register"`
+	Deskripsi        string    `gorm:"type:text" json:"deskripsi"`
+	Image_logo       string    `gorm:"type:text" json:"image_logo"`
+	Image_menu       string    `gorm:"type:text" json:"image_menu"`
+	Is_verified      string    `gorm:"type:varchar(1)" json:"is_verified"`
+	Average_rating   float64   `gorm:"type:float" json:"average_rating"`
+	Open             string    `gorm:"type:varchar(100)" json:"open"`
+	Close            string    `gorm:"type:varchar(100)" json:"close"`
 }

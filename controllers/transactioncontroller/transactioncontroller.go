@@ -78,11 +78,12 @@ func GetAllPaidGroups(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	w.Header().Set("Content-Type", "application/json")
-	cathering_id := mux.Vars(r)["cathering_id"]
+	user_id := mux.Vars(r)["user_id"]
 
 	var Transactions []models.TransactionGroup
 
-	result := models.DB.Where(map[string]interface{}{"cathering_id": cathering_id, "status": "Terbayar"}).Or(map[string]interface{}{"cathering_id": cathering_id, "status": "Dalam Pengantaran"}).Preload("TransactionGroupRelation.TransactionProduct").Preload("Cathering").Find(&Transactions)
+	result := models.DB.Debug().Raw(`
+	SELECT tg.id, tg.id_transaction, tg.total_price, tg.date_transaction, tg.user_id, tg.shipping_price, tg.status, tg.snap_token, tg.cathering_id, tg.full_address FROM transaction_groups as tg INNER JOIN transaction_group_relations AS tgr ON tg.id = tgr.transaction_group_id INNER JOIN transaction_products as tp ON tgr.transaction_product_id = tp.id INNER JOIN catherings as c on c.id = tg.cathering_id WHERE adddate(CAST( NOW() AS Date ),1) BETWEEN tg.date_transaction AND ADDDATE(tg.date_transaction, tp.time) AND tg.date_transaction is not null AND (tg.status = "Terbayar" OR tg.status = "Dalam Pengantaran") AND c.user_id=? GROUP BY tg.id`, user_id).Find(&Transactions)
 	response, _ := json.Marshal(map[string]any{"status": "success", "data": Transactions, "statusCode": 200})
 	if err := result.Error; err != nil {
 		w.WriteHeader(http.StatusExpectationFailed)

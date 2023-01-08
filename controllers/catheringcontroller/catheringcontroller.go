@@ -3,6 +3,7 @@ package catheringcontroller
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	// "fmt"
 
@@ -13,7 +14,23 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/rest-api/golang/models"
+	"golang.org/x/crypto/bcrypt"
 )
+
+type CatheringRequest struct {
+	Email string 
+	Password    string
+	Role    string 
+	User_id       int
+	Nama string 
+	Tanggal_register time.Time
+	Deskripsi string 
+	Image_logo string 
+	Image_menu string
+	Is_verified string  
+	Open string
+	Close string
+}
 
 func Index(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
@@ -109,23 +126,56 @@ func GetAllCatheringByGenre(w http.ResponseWriter, r *http.Request){
 	
 }
 
-func Create(w http.ResponseWriter, r *http.Request){
+func CreateCathering(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	decoder := json.NewDecoder(r.Body)
-    var Cathering models.Cathering
-    decoder.Decode(&Cathering)
-	result := models.DB.Create(&Cathering)
-	if result.Error != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		status,_ := json.Marshal(result.Error)
-		w.Write(status)
-	}else{
+    var Cathering CatheringRequest
+
+	err := decoder.Decode(&Cathering)
+	fmt.Println(err)
+	var User models.User
+
+	User.Email = string(Cathering.Email)
+	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(Cathering.Password), bcrypt.DefaultCost)
+	User.Password = string(hashPassword)
+	User.Role = string("Cathering")
+
+	models.DB.Create(&User)
+
+	var cathering models.Cathering
+
+		cathering.User_id = User.Id
+		cathering.Nama = string(Cathering.Nama)
+		cathering.Tanggal_register = time.Now()
+		cathering.Deskripsi =string(Cathering.Deskripsi)
+		cathering.Image_logo = string(Cathering.Image_logo)
+		cathering.Image_menu = string(Cathering.Image_menu)
+		cathering.Is_verified = string("0")
+		cathering.Open = string(Cathering.Open)
+		cathering.Close = string(Cathering.Close)
+		models.DB.Create(&cathering)
 		w.WriteHeader(http.StatusOK)
 		status,_ := json.Marshal(map[string]any{"status": "success","data":Cathering, "statusCode":200})
 		w.Write(status)
-	}
+
 	
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 func Profile(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
@@ -186,38 +236,6 @@ func Update(w http.ResponseWriter, r *http.Request){
 	
 }
 
-func Approve(w http.ResponseWriter, r *http.Request){
-	w.Header().Set("Content-Type", "application/json")
-	data, _ := io.ReadAll(r.Body)
-	id := mux.Vars(r)["id"]
-
-	if len(data) == 0{
-		w.WriteHeader(http.StatusInternalServerError)
-		status,_ := json.Marshal("Please insert some value first")
-		w.Write(status)
-	}else{
-		
-		var Catherings models.Cathering
-		json.Unmarshal(data, &Catherings)
-		
-		
-		result := models.DB.Model(&Catherings).Where("id", id).Updates(&Catherings)
-		
-		if result.Error != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			
-			status,_ := json.Marshal(result.Error)
-			w.Write(status)
-		}else{
-			w.WriteHeader(http.StatusOK)
-			status,_ := json.Marshal(map[string]any{"data": Catherings, "success" : true, "message": "Data has been updated"})
-			w.Write(status)
-		}
-	}
-	
-	
-	
-}
 
 func Delete(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
