@@ -10,6 +10,7 @@ import (
 	"github.com/rest-api/golang/controllers/productcontroller"
 	"github.com/rest-api/golang/controllers/categorycontroller"
 	"github.com/rest-api/golang/controllers/catheringcontroller"
+	"github.com/rest-api/golang/controllers/reviewcontroller"
 	"github.com/rest-api/golang/controllers/cartcontroller"
 	"github.com/rest-api/golang/controllers/transactioncontroller"
 	"github.com/rest-api/golang/models"
@@ -56,9 +57,13 @@ func main() {
 	r.HandleFunc("/setSnapToken/{id_transaction}", transactioncontroller.SetSnapToken).Methods("GET")
 	r.HandleFunc("/getAllProductByUserId/{user_id}", productcontroller.GetAllProductByUserId).Methods("GET")
 	r.HandleFunc("/deleteProduct/{product_id}", productcontroller.DeleteProductByProductId).Methods("DELETE")
-	
+	r.HandleFunc("/getUserReview", reviewcontroller.GetUserReview).Methods("GET")
+	r.HandleFunc("/searchProduct/{search}", productcontroller.SearchProduct).Methods("GET")
+	r.HandleFunc("/createUserReviews", reviewcontroller.CreateUserReviews).Methods("POST")
 	r.HandleFunc("/getAllCatheringByPopularity", catheringcontroller.GetAllCatheringByPopularity).Methods("GET")
 	r.HandleFunc("/resetIdTransaction/{id_transaction}", transactioncontroller.SetNewId).Methods("GET")
+
+
 	rCathering := route.PathPrefix("").Subrouter()
 	rCathering.HandleFunc("/catherings", catheringcontroller.Index).Methods("GET")
 	rCathering.HandleFunc("/getCathering/{id}", catheringcontroller.Show).Methods("GET")

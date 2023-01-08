@@ -73,6 +73,8 @@ func SetSnapToken(w http.ResponseWriter, r *http.Request){
 		}
 }
 
+
+
 func SetNewId(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	id_transaction := mux.Vars(r)["id_transaction"]
@@ -86,8 +88,9 @@ func SetNewId(w http.ResponseWriter, r *http.Request){
 		for i := range str {
 			str[i] = chars[rand.Intn(len(chars))]
 		}
+		fmt.Println(id_transaction)
 
-		result := models.DB.Model(&transactionGroup).Where("id_transaction", id_transaction).Update("id_transaction", str)
+		result := models.DB.Model(&transactionGroup).Where("id_transaction", id_transaction).Update("id_transaction", string(str))
 		
 		if result.Error != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -96,7 +99,7 @@ func SetNewId(w http.ResponseWriter, r *http.Request){
 			w.Write(status)
 		}else{
 			w.WriteHeader(http.StatusOK)
-			status,_ := json.Marshal(map[string]any{"data": str, "success" : true, "message": "Data has been updated"})
+			status,_ := json.Marshal(map[string]any{"data": string(str), "success" : true, "message": "Data has been updated"})
 			w.Write(status)
 		}
 }

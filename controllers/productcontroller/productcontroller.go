@@ -22,9 +22,12 @@ func GetAllProductsWithCartChecker(w http.ResponseWriter, r *http.Request){
 	cathering_id := r.FormValue("cathering_id")
 	priceOrder := r.FormValue("price_order")
 	productType := r.FormValue("product_type")
+	search := r.FormValue("search")
 	var Product []models.Product
 	var products_id []int
-	sqlStatement := "SELECT * FROM products WHERE cathering_id = ? AND ((CAST( NOW() AS Date ) BETWEEN start_date and due_date) OR start_date IS NULL OR due_date IS NULL)"
+
+	sqlStatement := "SELECT * FROM products WHERE cathering_id = ? AND ((CAST( NOW() AS Date ) BETWEEN start_date and due_date) OR start_date IS NULL OR due_date IS NULL) AND nama LIKE ?"
+
 	// SELECT * FROM products WHERE (CAST( NOW() AS Date ) BETWEEN start_date and due_date OR start_date IS NULL ; 
 	if(productType == "d"){
 		sqlStatement = sqlStatement + "AND type = 'daily'"
@@ -43,11 +46,11 @@ func GetAllProductsWithCartChecker(w http.ResponseWriter, r *http.Request){
 
 	
 
-	models.DB.Raw(sqlStatement, cathering_id).Find(&Product)
+	models.DB.Raw(sqlStatement, cathering_id, "%" + search + "%").Find(&Product)
 
 	
 	
-	models.DB.Raw("SELECT c.product_id  FROM products as p LEFT JOIN carts AS c ON p.id = c.product_id WHERE c.user_id = ? AND c.cathering_id = ? ", user_id, cathering_id).Scan(&products_id)
+	models.DB.Raw("SELECT c.product_id  FROM products as p LEFT JOIN carts AS c ON p.id = c.product_id WHERE c.user_id = ? AND c.cathering_id = ? AND p.nama LIKE ?", user_id, cathering_id, "%" + search + "%").Scan(&products_id)
 	response, _  := json.Marshal(map[string]any{"status": "success","data":Product, "carts" : products_id, "statusCode":200})
 	if err := models.DB.Find(&Product).Error; err != nil {
 		w.WriteHeader(http.StatusExpectationFailed)
@@ -116,6 +119,28 @@ func Show(w http.ResponseWriter, r *http.Request){
 
 
 	
+}
+
+func SearchProduct(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	search := mux.Vars(r)["search"]
+	cathering_id := r.FormValue("cathering_id")
+	var Product []models.Product
+	result := models.DB.Where("cathering_id", cathering_id).Where("nama LIKE ?", "%" + search + "%").Find(&Product)
+
+	if result.Error != nil {
+		response, _  := json.Marshal(map[string]any{"status": "failed", "message": result.Error})
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(response)
+	}else if result.RowsAffected == 0{
+		w.WriteHeader(http.StatusInternalServerError)
+		status,_ := json.Marshal(map[string]any{"status": "failed", "message": "No Products Found"})
+		w.Write(status)
+	}else{
+		response, _  := json.Marshal(map[string]any{"status": "success","data":Product, "statusCode":200})
+		w.WriteHeader(http.StatusOK)
+		w.Write(response)
+	}
 }
 
 
