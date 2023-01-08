@@ -20,7 +20,7 @@ import (
 type CatheringRequest struct {
 	Email string 
 	Password    string
-	Role    string 
+	Role_Id    int 
 	User_id       int
 	Nama string 
 	Tanggal_register time.Time
@@ -138,7 +138,7 @@ func CreateCathering(w http.ResponseWriter, r *http.Request){
 	User.Email = string(Cathering.Email)
 	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(Cathering.Password), bcrypt.DefaultCost)
 	User.Password = string(hashPassword)
-	User.Role = string("Cathering")
+	User.Role = 3
 
 	models.DB.Create(&User)
 
